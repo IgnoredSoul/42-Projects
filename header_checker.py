@@ -5,8 +5,9 @@ def find_files_with_three_hashes(path):
 
     for root, dirs, files in os.walk(path):
         for file in files:
-            if file.endswith('.txt') or file.endswith('.c') or file.endswith('.h'):
+            if str(file) == "Makefile" or file.endswith('.c') or file.endswith('.h'):
                 file_path = os.path.join(root, file)
+                print(f"checking {file}")
                 with open(file_path, 'r') as f:
                     first_line = f.readline()
                 if first_line.startswith("/* ") or first_line.startswith("/**"):
