@@ -1,4 +1,4 @@
-#include "../../includes/philosophers.h"
+#include "../philosophers.h"
 
 int	philosopher_takes_forks(t_philo *philosophers)
 {

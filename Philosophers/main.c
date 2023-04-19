@@ -1,4 +1,4 @@
-#include "../includes/philosophers.h"
+#include "./philosophers.h"
 
 int	initialise_philosophers(t_general *general)
 {
@@ -91,12 +91,6 @@ int	main(int argc, char **argv)
 			begin_monitoring(&general);
 			join_threads(&general);
 			free_philosophers(&general);
-		}
-		else 
-		{
-			printf("Invalid Args.");
-			printf("[1] Numb' of philosphers.\n[2] Time to die.\n[3] Time to eat.");
-			printf("[4] Time to sleep.\n[5] Numb' of times each philospers must eat.")
 		}
 	}
 }

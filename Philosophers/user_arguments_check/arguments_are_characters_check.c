@@ -1,4 +1,4 @@
-#include "../../includes/philosophers.h"
+#include "../philosophers.h"
 
 int	arguments_outside_limits(char *str)
 {

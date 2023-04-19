@@ -1,4 +1,4 @@
-#include "../../includes/philosophers.h"
+#include "../philosophers.h"
 
 int	is_numeric(int count)
 {

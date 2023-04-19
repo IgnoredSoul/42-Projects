@@ -1,4 +1,4 @@
-#include "../../includes/philosophers.h"
+#include "../philosophers.h"
 
 int	check_last_meal(t_philo *philo)
 {

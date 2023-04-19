@@ -4,10 +4,10 @@ CC = gcc
 
 FLAGS = -Wall -Wextra -Werror
 
-SOURCES = ./sources/philosophers_actions/*.c \
-		  ./sources/philosophers_utils/*.c \
-		  ./sources/user_arguments_check/*.c \
-		  ./sources/main.c
+SOURCES = ./philosophers_actions/*.c \
+		  ./philosophers_utils/*.c \
+		  ./user_arguments_check/*.c \
+		  ./main.c
 
 all:
 	$(CC) $(FLAGS) $(SOURCES) -o $(NAME)

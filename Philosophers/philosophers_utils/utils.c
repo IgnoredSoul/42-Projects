@@ -1,4 +1,4 @@
-#include "../../includes/philosophers.h"
+#include "../philosophers.h"
 
 void	ft_putstr(char *str)
 {
@@ -16,7 +16,7 @@ void	print_limits_error(void)
 
 void	print_right_syntax(void)
 {
-	ft_putstr("\n./philo[philos][death_time][eating_time][sleeping_time]\n\n");
+	ft_putstr("\n./philo [philos] [death_time] [eating_time] [sleeping_time]\n\n");
 }
 
 int	ft_atoi(const char *str)
