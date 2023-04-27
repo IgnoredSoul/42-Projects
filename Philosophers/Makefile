@@ -15,4 +15,4 @@ all:
 fclean: 
 	@rm -rf $(NAME)
 
-re: fclean all
+re: fclean al
