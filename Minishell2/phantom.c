@@ -35,7 +35,7 @@ char *get_relative_path(char *cwd, size_t size) {
 void sigint_handler() {
     char cwd[FILENAME_MAX];
     char *relpath = get_relative_path(cwd, sizeof(cwd));
-    printf("\n%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
+    printf("\n%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_RESET, ANSI_COLOR_BCYAN);
     printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
     fflush(stdout);
 }
