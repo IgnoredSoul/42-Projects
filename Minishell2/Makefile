@@ -1,22 +1,10 @@
-SRCDIR = .
-SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/commands/*.c)
-OBJDIR = obj
-BINDIR = bin
-OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
-CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g
-LDFLAGS =
+CC=gcc
+CFLAGS=-Wall -Wextra -pedantic
 
-.PHONY: clean
+all: phantom
 
-$(BINDIR)/my_program: $(OBJS)
-	$(CC) $(LDFLAGS) $^ -o $@
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJDIR)/%.o: $(SRCDIR)/commands/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+phantom: phantom.c phantom.h
+	$(CC) $(CFLAGS) -o $@ phantom.c
 
 clean:
-	rm -rf $(OBJDIR)/*.o $(BINDIR)/my_program
+	rm -f phantom
