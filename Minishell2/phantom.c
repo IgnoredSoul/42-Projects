@@ -55,12 +55,18 @@ int main() {
         char cwd[FILENAME_MAX];
         char *relpath = get_relative_path(cwd, sizeof(cwd));
 
+        char* username = getlogin();
+        char histfile[PATH_MAX];
+        snprintf(histfile, PATH_MAX, "/home/%s/.bash_history", username);
+
         printf("%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
         printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
 
         if(fgets(pipeline, sizeof(pipeline), stdin) == NULL){
             handle_quit();
         }else{
+            FILE* hist = fopen(histfile, "a");
+            fprintf(hist, pipeline);
             // Remove newline character from the end of the command
             pipeline[strcspn(pipeline, "\n")] = 0;
 
