@@ -42,8 +42,23 @@ void sigint_handler() {
 
 void handle_quit() {
     printf("Catch ya later mate\n");
-    sleep(1.5);
+    sleep(1);
     exit(0);
+}
+
+void write_hist(char *string){
+    char *home_dir = getenv("HOME");
+    char homedir[1024];
+
+    snprintf(homedir, 1024, "%s/.phantom_history", home_dir);
+    // Open the .bash_history file for appending
+    FILE *history_file = fopen(homedir, "a");
+    
+    // Write the command and timestamp to the .bash_history file
+    fprintf(history_file, "%s\n", string);
+    
+    // Close the .bash_history file
+    fclose(history_file);
 }
 
 int main() {
@@ -55,20 +70,15 @@ int main() {
         char cwd[FILENAME_MAX];
         char *relpath = get_relative_path(cwd, sizeof(cwd));
 
-        char* username = getlogin();
-        char histfile[PATH_MAX];
-        snprintf(histfile, PATH_MAX, "/home/%s/.bash_history", username);
-
         printf("%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
         printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
 
         if(fgets(pipeline, sizeof(pipeline), stdin) == NULL){
             handle_quit();
         }else{
-            FILE* hist = fopen(histfile, "a");
-            fprintf(hist, pipeline);
             // Remove newline character from the end of the command
             pipeline[strcspn(pipeline, "\n")] = 0;
+
 
             if (strcmp(pipeline, "exit") == 0) {
                 exit(1);
@@ -77,6 +87,10 @@ int main() {
                 if (chdir(pipeline + 3) != 0) {
                     handle_error("No such directory\n");
                 }
+            }else if(strncmp(pipeline, "history", 7) == 0){
+                printf("%s•──────•%s START ✝ HIST %s•──────•%s\n", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_RESET);
+                system("cat ~/.phantom_history");
+                printf("%s•──────•%s  END ✝ HIST  %s•──────•%s\n", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_RESET);
             }else{
                 FILE* fp = popen(pipeline, "r");
                 if (fp == NULL) {
@@ -91,6 +105,7 @@ int main() {
 
                 pclose(fp);
             }
+            write_hist(pipeline);
         }
     }
     return 0;

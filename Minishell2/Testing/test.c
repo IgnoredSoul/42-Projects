@@ -42,7 +42,7 @@ void sigint_handler() {
 
 void handle_quit() {
     printf("Catch ya later mate\n");
-    sleep(1.5);
+    sleep(1);
     exit(0);
 }
 
