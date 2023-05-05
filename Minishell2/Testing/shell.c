@@ -1,77 +1,94 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include "ansi-color.h"
 
-#define MAX_LINE_LENGTH 1000
-#define MAX_DISPLAYED_LINES 10
+char *get_relative_path(char *cwd, size_t size) {
+    if (getcwd(cwd, size) == NULL) {
+        perror("getcwd() error");
+        exit(EXIT_FAILURE);
+    }
+
+    char *home_dir = getenv("HOME");
+    if (home_dir == NULL) {
+        fprintf(stderr, "HOME environment variable not set\n");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t home_dir_len = strlen(home_dir);
+    if (strncmp(cwd, home_dir, home_dir_len) == 0) {
+        cwd[0] = '~';
+        memmove(&cwd[1], &cwd[home_dir_len], strlen(&cwd[home_dir_len]) + 1);
+    }
+
+    return cwd;
+}
+
+void handle_error(char *msg){
+    printf("Phantom: %s\n", msg);
+}
+
+void sigint_handler(int sig) {
+    printf("Ctrl+C detected\n");
+    // Add code to handle the signal here
+}
 
 int main() {
-    FILE *fp;
-    char line[MAX_LINE_LENGTH];
-    int len, last_line = 0, arrow, row = 1, total_lines = 0;
-    struct termios orig_termios, new_termios;
+    char command[100];
+    char *args[10];
+    char *token;
+    int num_args;
+    int cyan = 96;
 
-    fp = fopen("file.txt", "r");
-    if (fp == NULL) {
-        printf("Error opening file");
-        return 1;
-    }
+    while (1) {
+        char cwd[FILENAME_MAX];
+        char *relpath = get_relative_path(cwd, sizeof(cwd));
+        printf("%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
+        printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);
+        fgets(command, sizeof(command), stdin);
 
-    // Save original terminal settings
-    tcgetattr(STDIN_FILENO, &orig_termios);
-    new_termios = orig_termios;
-    new_termios.c_lflag &= ~(ICANON | ECHO); // Turn off canonical mode and echo
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+        // Remove newline character from the end of the command
+        command[strcspn(command, "\n")] = 0;
 
-    // Count total number of lines in file
-    while (fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
-        total_lines++;
-    }
-    rewind(fp);
+        if (strcmp(command, "exit") == 0) {
+            break;
+        } else if (strncmp(command, "cd ", 3) == 0) {
+            // Change directory using chdir()
+            if (chdir(command + 3) != 0) {
+                handle_error("No such directory\n");
+            }
+        } else {
+            // Parse command line arguments
+            num_args = 0;
+            token = strtok(command, " ");
+            while (token != NULL) {
+                args[num_args] = token;
+                num_args++;
+                token = strtok(NULL, " ");
+            }
+            args[num_args] = NULL;
 
-    // Display last few lines of file and handle arrow keys
-    while (fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
-        len = strlen(line);
-        if (len > 0 && line[len-1] == '\n') {
-            // Found a complete line
-            last_line = 1;
-        }
-
-        if (total_lines - row < MAX_DISPLAYED_LINES) {
-            printf("\r%s", line);
-            fflush(stdout);
-        }
-        row++;
-
-        // Check for arrow keys
-        arrow = getchar();
-        if (arrow == 27) {
-            // Arrow key was pressed
-            arrow = getchar();
-            if (arrow == 91) {
-                // Arrow key sequence continued
-                arrow = getchar();
-                if (arrow == 65) {
-                    // Up arrow was pressed
-                    continue; // Do nothing
+            // Execute command using execvp()
+            if (fork() == 0) {
+                for(int i = 0; i < num_args; i++)
+                {
+                    printf("(%s) ", args[i]);
                 }
-                else if (arrow == 66) {
-                    // Down arrow was pressed
-                    if (last_line == 0 || !feof(fp)) {
-                        fgets(line, MAX_LINE_LENGTH, fp);
-                        printf("\r%s", line);
-                        fflush(stdout);
-                    }
-                }
+                
+                printf("(%d)\n", num_args);
+
+
+                execvp(args[0], args);
+                handle_error("Could not execute command\n");
+                exit(1);
+            } else {
+                wait(NULL);
             }
         }
     }
 
-    // Restore original terminal settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
-
-    fclose(fp);
     return 0;
 }

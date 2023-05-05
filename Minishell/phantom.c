@@ -7,10 +7,6 @@
 #include <fcntl.h>
 #include "phantom.h"
 
-void handle_error(char *msg){
-    printf("Phantom: %s", msg);
-}
-
 char *get_relative_path(char *cwd, size_t size) {
     if (getcwd(cwd, size) == NULL) {
         perror("getcwd() error");
@@ -22,7 +18,6 @@ char *get_relative_path(char *cwd, size_t size) {
         fprintf(stderr, "HOME environment variable not set\n");
         exit(EXIT_FAILURE);
     }
-
     size_t home_dir_len = strlen(home_dir);
     if (strncmp(cwd, home_dir, home_dir_len) == 0) {
         cwd[0] = '~';
@@ -32,23 +27,33 @@ char *get_relative_path(char *cwd, size_t size) {
     return cwd;
 }
 
-void print_header(char *path){
-    printf("%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, path, ANSI_COLOR_BCYAN);
-    printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
-}
-
 void sigint_handler() {
     char cwd[FILENAME_MAX];
     char *relpath = get_relative_path(cwd, sizeof(cwd));
-    printf("\n%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
+    printf("\n%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_RESET, ANSI_COLOR_BCYAN);
     printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
     fflush(stdout);
 }
 
 void handle_quit() {
     printf("Catch ya later mate\n");
-    sleep(1.5);
+    sleep(1);
     exit(0);
+}
+
+void write_hist(char *string){
+    char *home_dir = getenv("HOME");
+    char homedir[1024];
+
+    snprintf(homedir, 1024, "%s/.phantom_history", home_dir);
+    // Open the .bash_history file for appending
+    FILE *history_file = fopen(homedir, "a");
+    
+    // Write the command and timestamp to the .bash_history file
+    fprintf(history_file, "%s\n", string);
+    
+    // Close the .bash_history file
+    fclose(history_file);
 }
 
 int main() {
@@ -60,7 +65,8 @@ int main() {
         char cwd[FILENAME_MAX];
         char *relpath = get_relative_path(cwd, sizeof(cwd));
 
-        print_header(relpath);
+        printf("%s┌──(%sPhantom ✝ Console%s)-[%s%s%s%s]", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_COLOR_WHITE, ANSI_BOLD, relpath, ANSI_COLOR_BCYAN);
+        printf("\n└─%s$%s ", ANSI_COLOR_BMAGENTA, ANSI_RESET);  
 
         if(fgets(pipeline, sizeof(pipeline), stdin) == NULL){
             handle_quit();
@@ -68,13 +74,18 @@ int main() {
             // Remove newline character from the end of the command
             pipeline[strcspn(pipeline, "\n")] = 0;
 
+
             if (strcmp(pipeline, "exit") == 0) {
-                exit(1);
+                handle_quit();
             } else if (strncmp(pipeline, "cd ", 3) == 0) {
                 // Change directory using chdir()
                 if (chdir(pipeline + 3) != 0) {
-                    handle_error("No such directory\n");
+                    printf("Phantom: No such directory\n");
                 }
+            }else if(strncmp(pipeline, "history", 7) == 0){
+                printf("%s•──────•%s START ✝ HIST %s•──────•%s\n", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_RESET);
+                system("\ncat ~/.phantom_history");
+                printf("%s•──────•%s  END ✝ HIST  %s•──────•%s\n", ANSI_COLOR_BCYAN, ANSI_COLOR_BMAGENTA, ANSI_COLOR_BCYAN, ANSI_RESET);
             }else{
                 FILE* fp = popen(pipeline, "r");
                 if (fp == NULL) {
@@ -86,9 +97,10 @@ int main() {
                 while (fgets(response, sizeof(response), fp) != NULL) {
                     printf("%s", response);
                 }
-
+                printf("\n");
                 pclose(fp);
             }
+            write_hist(pipeline);
         }
     }
     return 0;

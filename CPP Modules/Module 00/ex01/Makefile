@@ -1,0 +1,8 @@
+all:
+	@clear
+	c++ *.cpp -Wall -Wextra -Werror -o phonebook
+	./phonebook
+	@rm phonebook
+
+clean:
+	@rm phonebook
