@@ -8,13 +8,13 @@
 class Contact
 {
 	public:
-	std::string		name;
-	std::string		Last_name;
-	std::string		Nick_name;
-	std::string		secret;
-	std::string		phone;
+	std::string name;
+	std::string Last_name;
+	std::string Nick_name;
+	std::string secret;
+	std::string phone;
 
-	void	display(void)
+	void display(void)
 	{
 		std::cout << name;
 		std::cout << " : ";
@@ -26,7 +26,7 @@ class PhoneBook
 {
 	public:
 	Contact Cons[8];
-	int		num;
+	int num;
 };
 
 #endif

@@ -2,7 +2,7 @@
 #include "iostream"
 #include <string>
 
-void	putst(std::string temp)
+void putst(std::string temp)
 {
 	std::cout << " | ";
 	if (temp.size() > 10)

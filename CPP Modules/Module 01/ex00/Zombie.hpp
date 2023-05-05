@@ -7,9 +7,9 @@ class Zombie
 {
     public:
 
-    void    set_name(std::string name);
+    void set_name(std::string name);
 
-    void    announce(void);
+    void announce(void);
 
     Zombie(void);
     Zombie(std::string name);
@@ -21,6 +21,6 @@ class Zombie
 };
 
 Zombie* newZombie(std::string name);
-void    randomChump(std::string name);
+void randomChump(std::string name);
 
 #endif
